@@ -35,13 +35,24 @@ class SparseMatrix:
             raise ValueError("Invalid dimensions for multiplication")
         result = SparseMatrix(num_rows=self.num_rows, num_cols=other.num_cols)
         other_col = [{} for _ in range(other.num_cols)]
+   
+    # Populate other_col
         for r in range(other.num_rows):
             for c, v in other.rows[r].items():
-                other_col[c][r] = v
+                if c < len(other_col):
+                    other_col[c][r] = v
+            else:
+                print(f"Index out of range when populating other_col: c={c}, r={r}")
+   
+    # Perform multiplication
         for r in range(self.num_rows):
             for c, v in self.rows[r].items():
-                for c_other, v_other in other_col[c].items():
-                    result.set_element(r, c_other, result.get_element(r, c_other) + v * v_other)
+                if c < len(other_col):
+                    for c_other, v_other in other_col[c].items():
+                        result.set_element(r, c_other, result.get_element(r, c_other) + v * v_other)
+            else:
+                print(f"Index out of range when accessing other_col: c={c}, r={r}")
+   
         return result
 
     def _element_wise_operation(self, other, op):
@@ -49,8 +60,11 @@ class SparseMatrix:
         for r in range(self.num_rows):
             for c, v in self.rows[r].items():
                 result.set_element(r, c, v)
+        if r < len(other.rows):
             for c, v in other.rows[r].items():
                 result.set_element(r, c, op(result.get_element(r, c), v))
+        else:
+            print(f"Index out of range: r={r}, len(other.rows)={len(other.rows)}")
         return result
 
     def get_element(self, row, col):
